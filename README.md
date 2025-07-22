@@ -52,33 +52,43 @@ Database: SQLite3
 
 ## 📂 Project Structure
 ├── flask_backend.py # Main Flask backend
+
 ├── smart_resume_analyzer.html # Frontend UI
+
 ├── resume_analyzer.db # SQLite database
+
 ├── uploads/ # Folder for uploaded resumes (temporary)
+
 ├── README.md # Project documentation
+
 └── Requirements.txt # Python dependencies
 
 ---
 
 2️⃣ Install dependencies
 Make sure Python 3.8+ is installed.
-(Optional: create a virtual environment).
+(Optional: create a virtual environment.)
+
 	pip install -r requirements.txt
 Or manually install the key packages:
+
 	pip install flask flask-cors werkzeug spacy pypdf2
 	python -m spacy download en_core_web_sm
 
 ---
 
 3️⃣ Run the Flask backend:
+
 	python flask_backend.py
 By default, it runs on:
+
 	http://127.0.0.1:5000/
 
 ---
 
 4️⃣ Open the Frontend
 Visit:
+
 	http://127.0.0.1:5000/
 You can also directly open the smart_resume_analyzer.html file in the browser.
 However, for authentication & admin dashboard, you must use the Flask server so cookies work properly.
