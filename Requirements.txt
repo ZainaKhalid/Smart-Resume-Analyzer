@@ -1,0 +1,14 @@
+Flask
+Flask-CORS
+PyPDF2
+spacy
+werkzeug
+
+You also need to download the spaCy English language model (once) after installing the packages:
+
+	python -m spacy download en_core_web_sm
+
+So the steps for the reader of your repo would be:
+
+	pip install -r requirements.txt
+	python -m spacy download en_core_web_sm

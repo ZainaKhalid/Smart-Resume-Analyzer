@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Resume Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #backgroundBubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        main {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero {
+            font-family: 'Baloo 2', cursive;
+            text-align: center;
+            padding: 4rem 0;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #fff;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 3rem;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #5a6fd8;
+        }
+
+        .upload-area.dragover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #4c63d2;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            background: #e8f2ff;
+            color: #667eea;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 0.2rem;
+        }
+
+        .job-match {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .job-match:hover {
+            transform: translateY(-3px);
+        }
+
+        .match-score {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            float: right;
+        }
+
+        .job-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .company-name {
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .job-description {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .admin-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 🌟 Page Transitions */
+        .page {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ✨ Card Hover Glow */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            animation: none;
+        }
+
+        /* Optional: Pulse Glow on Hover */
+        /*
+        .card:hover {
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+            }
+            to {
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+            }
+        }
+        */
+
+        /* 🚀 Smooth Progress Bar */
+        .progress-fill {
+            transition: width 0.8s ease;
+        }
+
+        /* 🎯 Job Match Fade In */
+        .job-match {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s forwards;
+        }
+
+        .job-match:nth-child(1) { animation-delay: 0s; }
+        .job-match:nth-child(2) { animation-delay: 0.1s; }
+        .job-match:nth-child(3) { animation-delay: 0.2s; }
+        .job-match:nth-child(4) { animation-delay: 0.3s; }
+        .job-match:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 🌈 Button Click Effect */
+        .btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="backgroundBubbles"></canvas>
+    <header>
+        <nav class="container">
+            <div class="logo">📊 ResumeMatch</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showPage('home')">Home</a></li>
+                <li><a href="#" onclick="showPage('analyzer')">Analyzer</a></li>
+                <li><a href="#" onclick="showPage('admin')">Admin</a></li>
+                <li><a href="#" onclick="showPage('about')">About</a></li>
+                <li><a href="#" onclick="showPage('contact')">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="hero">
+                <h1>Smart Resume Analyzer</h1>
+                <p>Upload your resume and discover perfect job matches using AI-powered analysis</p>
+                <a href="#" class="cta-button" onclick="showPage('analyzer')">Get Started →</a>
+            </div>
+            
+            <div class="card">
+                <h2>How It Works</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <div>Upload Resume</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2</div>
+                        <div>AI Analysis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div>Job Matching</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">4</div>
+                        <div>Get Results</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analyzer Page -->
+        <div id="analyzer" class="page">
+            <div class="card">
+                <h2>Resume Analysis</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📄</div>
+                    <h3>Drop your resume here or click to upload</h3>
+                    <p>Supports PDF files up to 10MB</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf">
+                    <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+                </div>
+                
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div id="analysisResults" style="display: none;">
+                    <h3>Analysis Results</h3>
+                    <div class="results-grid">
+                        <div class="card">
+                            <h4>Extracted Skills</h4>
+                            <div id="skillsContainer"></div>
+                        </div>
+                        <div class="card">
+                            <h4>Experience Level</h4>
+                            <div id="experienceContainer"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="jobMatches" style="display: none;">
+                    <h3>Job Matches</h3>
+                    <div id="matchesContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="admin" class="page">
+            <div class="card">
+                <h2>Admin Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalJobs">42</div>
+                        <div>Total Jobs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalResumes">128</div>
+                        <div>Resumes Processed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="successRate">87%</div>
+                        <div>Match Success Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-panel">
+                <h3>Add New Job</h3>
+                <form id="jobForm">
+                    <div class="form-group">
+                        <label for="jobTitle">Job Title</label>
+                        <input type="text" id="jobTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="companyName">Company Name</label>
+                        <input type="text" id="companyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jobDescription">Job Description</label>
+                        <textarea id="jobDescription" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="requiredSkills">Required Skills (comma-separated)</label>
+                        <input type="text" id="requiredSkills" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="experienceLevel">Experience Level</label>
+                        <select id="experienceLevel" required>
+                            <option value="">Select Level</option>
+                            <option value="entry">Entry Level</option>
+                            <option value="mid">Mid Level</option>
+                            <option value="senior">Senior Level</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Add Job</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- About Page -->
+        <div id="about" class="page">
+            <div class="card">
+                <h2>About ResumeMatch</h2>
+                <p>ResumeMatch is an AI-powered resume analysis and job matching platform that helps job seekers find the perfect opportunities based on their skills and experience.</p>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Advanced AI resume parsing</li>
+                    <li>Intelligent skill extraction</li>
+                    <li>Smart job matching algorithm</li>
+                    <li>Real-time analysis</li>
+                    <li>Admin dashboard for job management</li>
+                </ul>
+                
+                <h3>Technology Stack</h3>
+                <p>Built with modern web technologies including HTML5, CSS3, JavaScript, and AI/NLP capabilities for accurate resume analysis and job matching.</p>
+            </div>
+        </div>
+
+        <!-- Contact Page -->
+        <div id="contact" class="page">
+            <div class="card">
+                <h2>Contact Us</h2>
+                <div class="results-grid">
+                    <div>
+                        <h3>Get in Touch</h3>
+                        <p>Have questions about ResumeMatch? We'd love to hear from you!</p>
+                        <p><strong>Email:</strong> support@resumematch.com</p>
+                        <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+                        <p><strong>Address:</strong> 123 Tech Street, Silicon Valley, CA 94000</p>
+                    </div>
+                    <div>
+                        <h3>Send Message</h3>
+                        <form>
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 ResumeMatch. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    const canvas = document.getElementById('backgroundBubbles');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let bubbles = [];
+
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function createBubbles() {
+        bubbles = [];
+        const colors = [
+            'rgba(102, 126, 234, 0.3)',   // theme blue
+            'rgba(118, 75, 162, 0.3)',    // theme violet
+            'rgba(150, 200, 255, 0.2)',   // soft light blue
+            'rgba(200, 150, 255, 0.2)',   // soft purple
+            'rgba(170, 240, 255, 0.2)'    // light aqua
+        ];
+        for (let i = 0; i < 30; i++) {
+            bubbles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 30 + 20,
+                speed: Math.random() * 0.5 + 0.2,
+                dx: (Math.random() - 0.5) * 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+    }
+    createBubbles();
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        for (let b of bubbles) {
+            b.y -= b.speed;
+            b.x += b.dx;
+            if (b.y + b.radius < 0) {
+                b.y = height + b.radius;
+                b.x = Math.random() * width;
+            }
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fillStyle = b.color;
+            ctx.fill();
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+    </script>
+    <script>
+const originalAdminContent = document.getElementById('admin').innerHTML;
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) handleFileUpload(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) handleFileUpload(e.target.files[0]);
+});
+
+function handleFileUpload(file) {
+    if (file.type !== 'application/pdf') {
+        alert('Please upload a PDF file');
+        return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB');
+        return;
+    }
+
+    progressBar.style.display = 'block';
+    progressFill.style.width = '30%';
+
+    analyzeResume(file);
+}
+
+function analyzeResume(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('http://127.0.0.1:5000/api/upload-resume', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        displayAnalysisResults(data.skills, data.experience_level);
+        fetchJobMatches(data.resume_id);
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error uploading resume');
+    })
+    .finally(() => {
+        progressFill.style.width = '100%';
+        setTimeout(() => {
+            progressBar.style.display = 'none';
+            progressFill.style.width = '0%';
+        }, 500);
+    });
+}
+
+function displayAnalysisResults(skills, experience) {
+    const skillsContainer = document.getElementById('skillsContainer');
+    const experienceContainer = document.getElementById('experienceContainer');
+
+    skillsContainer.innerHTML = skills.map(skill => 
+        `<span class="skill-tag">${skill}</span>`
+    ).join('');
+
+    experienceContainer.innerHTML = `<p><strong>${experience}</strong></p>`;
+    document.getElementById('analysisResults').style.display = 'block';
+}
+
+function fetchJobMatches(resumeId) {
+    fetch(`http://127.0.0.1:5000/api/job-matches/${resumeId}`)
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        displayJobMatches(data.matches);
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error fetching job matches');
+    });
+}
+
+function displayJobMatches(matches) {
+    const matchesContainer = document.getElementById('matchesContainer');
+
+    matchesContainer.innerHTML = matches.map(job => `
+        <div class="job-match">
+            <div class="match-score">${job.match_score}% Match</div>
+            <div class="job-title">${job.title}</div>
+            <div class="company-name">${job.company}</div>
+            <div class="job-description">${job.description}</div>
+            <div><strong>Salary:</strong> ${job.salary}</div>
+            <div><strong>Matching Skills:</strong> ${job.matching_skills.join(', ')}</div>
+        </div>
+    `).join('');
+
+    document.getElementById('jobMatches').style.display = 'block';
+}
+
+// Navigation
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    document.getElementById(pageId).classList.add('active');
+}
+
+// 🧰 Admin Form Submit Handler
+document.getElementById('jobForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('jobTitle').value.trim();
+    const company = document.getElementById('companyName').value.trim();
+    const description = document.getElementById('jobDescription').value.trim();
+    const skills = document.getElementById('requiredSkills').value.trim().split(',').map(s => s.trim());
+    const experience_level = document.getElementById('experienceLevel').value;
+    const salary = ""; // optional: add an input if you want to capture it
+
+    fetch('http://127.0.0.1:5000/api/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, company, description, skills, experience_level, salary })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Job added successfully!');
+            e.target.reset();
+
+            const totalJobs = document.getElementById('totalJobs');
+            totalJobs.textContent = parseInt(totalJobs.textContent) + 1;
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error adding job');
+    });
+});
+
+// 🧰 Admin Authentication
+function checkAdmin() {
+    fetch('http://127.0.0.1:5000/api/check-admin', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.logged_in) {
+            showAdminDashboard();
+        } else {
+            showLoginForm();
+        }
+    });
+}
+
+function showLoginForm() {
+    document.getElementById('admin').innerHTML = `
+        <div class="card">
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <input type="text" id="adminUsername" placeholder="Username" required>
+                <input type="password" id="adminPassword" placeholder="Password" required>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <hr/>
+            <h2>Or Sign Up</h2>
+            <form id="signupForm">
+                <input type="text" id="signupUsername" placeholder="Username" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <button type="submit" class="btn">Sign Up</button>
+            </form>
+        </div>
+    `;
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('adminUsername').value.trim();
+        const password = document.getElementById('adminPassword').value.trim();
+
+        fetch('http://127.0.0.1:5000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Logged in!');
+                showAdminDashboard(); // <-- show the dashboard immediately
+            } else {
+                alert(data.error);
+            }
+        });
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('signupUsername').value.trim();
+        const password = document.getElementById('signupPassword').value.trim();
+
+        fetch('http://127.0.0.1:5000/api/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Signup successful! Please log in.');
+            } else {
+                alert(data.error);
+            }
+        });
+    });
+}
+
+function showAdminDashboard() {
+    document.getElementById('admin').innerHTML = originalAdminContent;
+
+    const card = document.querySelector('#admin .card');
+    const logoutBtn = document.createElement('button');
+    logoutBtn.textContent = 'Logout';
+    logoutBtn.classList.add('btn');
+    logoutBtn.style.cssText = 'float:right; margin-top:-40px; position:relative; z-index:10;';
+    logoutBtn.onclick = logout;
+
+    if (card) card.prepend(logoutBtn);
+
+
+    bindJobForm();
+    animateStats();
+}
+
+function logout() {
+    fetch('http://127.0.0.1:5000/api/logout', {
+        method: 'POST',
+        credentials: 'include'
+    }).then(() => {
+        alert('Logged out');
+        showLoginForm();
+    });
+}
+
+function bindJobForm() {
+    const jobForm = document.getElementById('jobForm');
+    if (!jobForm) return;
+
+    jobForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const title = document.getElementById('jobTitle').value.trim();
+        const company = document.getElementById('companyName').value.trim();
+        const description = document.getElementById('jobDescription').value.trim();
+        const skills = document.getElementById('requiredSkills').value.trim().split(',').map(s => s.trim());
+        const experience_level = document.getElementById('experienceLevel').value;
+
+        fetch('http://127.0.0.1:5000/api/jobs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, company, description, skills, experience_level }),
+            credentials: 'include'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Job added successfully!');
+                jobForm.reset();
+                const totalJobs = parseInt(document.getElementById('totalJobs').textContent);
+                document.getElementById('totalJobs').textContent = totalJobs + 1;
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error adding job');
+        });
+    });
+}
+
+// Run checkAdmin() when admin page is shown
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        const pageId = e.target.getAttribute('onclick')?.match(/showPage\('(.+)'\)/)?.[1];
+        if (pageId === 'admin') {
+            setTimeout(checkAdmin, 200);
+        }
+    });
+});
+
+</script>
+
+</body>
+</html>
