@@ -115,8 +115,9 @@ Deploy on cloud (Heroku, AWS, etc.) with production-ready server (gunicorn, etc.
 
 ---
 
-📽️ Demo
-https://www.youtube.com/watch?v=mock-demo-link
+📽️ Demo Video
+🔗 [Watch the Demo on YouTube](https://youtu.be/XTUkD7jVzLc)
+
 ---
 
 📄 License
